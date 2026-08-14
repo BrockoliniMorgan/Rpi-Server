@@ -1,5 +1,6 @@
 {
   inputs = {
+    # TODO: Switch to stable. Didn't want to rebuild
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixos-hardware = {
       url = "github:NixOS/nixos-hardware";
@@ -28,7 +29,7 @@
         ${hostName} = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            nixos-hardware.nixosModules.raspberry-pi-4
+            nixos-hardware.nixosModules.raspberry-pi-4 # This replaces hardware-configuration.nix
             sops-nix.nixosModules.sops
             ./system
           ];
