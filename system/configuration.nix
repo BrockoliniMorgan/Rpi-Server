@@ -13,9 +13,10 @@
     inherit hostName;
   };
   boot.supportedFilesystems.zfs = lib.mkForce false;
-
-  # Missing hdmi module (https://discourse.nixos.org/t/cannot-build-raspberry-pi-sdimage-module-dw-hdmi-not-found/71804)
-  boot.initrd.allowMissingModules = true;
+  hardware.raspberry-pi.firmware = {
+    enable = true;
+    uboot.enable = true;
+  };
 
   # Configure network connections interactively with nmcli or nmtui.
   networking.networkmanager = {
