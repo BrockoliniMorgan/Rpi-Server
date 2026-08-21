@@ -1,0 +1,9 @@
+keys:
+  - &admin_brock age149ash0ufyuhh6h7qytn0gkx5vwps723kex3842z83n8kdny6dyuq4t27lq
+  - &rpi age1dpddjcyqsqnyrrwazd9z89f72r3u8448wk6cshgul5vum80564js8amnf4
+
+creation_rules:
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+    - age:
+      - *admin_brock
