@@ -21,6 +21,7 @@
     }:
     let
       inherit (nixpkgs) lib;
+      username = "qutrc";
       hostNames = builtins.concatLists (
         builtins.genList (i: [ "qutrc-pi-${lib.fixedWidthNumber 2 i}" ]) 8
       );
@@ -39,7 +40,7 @@
             ./system
           ];
           specialArgs = {
-            inherit hostName;
+            inherit hostName username;
           };
         };
       };

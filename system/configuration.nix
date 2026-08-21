@@ -6,12 +6,12 @@
   lib,
   pkgs,
   hostName,
+  username,
+  config,
   ...
 }:
 {
-  networking = {
-    inherit hostName;
-  };
+
   boot.supportedFilesystems.zfs = lib.mkForce false;
   hardware.raspberry-pi.firmware = {
     enable = true;
@@ -19,9 +19,12 @@
   };
 
   # Configure network connections interactively with nmcli or nmtui.
-  networking.networkmanager = {
-    enable = true;
-    wifi.powersave = false;
+  networking = {
+    inherit hostName;
+    networkmanager = {
+      enable = true;
+      wifi.powersave = false;
+    };
   };
 
   # Set your time zone.
@@ -33,20 +36,17 @@
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_AU.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
 
+  sops.secrets."rpi/password" = { };
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.qutrc = {
+  users.users.${username} = {
     isNormalUser = true;
     extraGroups = [
       "wheel"
       "dialout"
       "networkmanager"
     ];
+    hashedPasswordFile = config.sops.secrets."rpi/password".path;
   };
 
   nix.settings = {
@@ -61,7 +61,7 @@
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    vim
     wget
     curl
   ];
