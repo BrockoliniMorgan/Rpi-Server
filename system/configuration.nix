@@ -13,10 +13,6 @@
 {
 
   boot.supportedFilesystems.zfs = lib.mkForce false;
-  hardware.raspberry-pi.firmware = {
-    enable = true;
-    uboot.enable = true;
-  };
 
   # Configure network connections interactively with nmcli or nmtui.
   networking = {
@@ -37,7 +33,7 @@
   # Select internationalisation properties.
   i18n.defaultLocale = "en_AU.UTF-8";
 
-  sops.secrets."rpi/password" = { };
+  sops.secrets."keys/password" = { };
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.${username} = {
     isNormalUser = true;
@@ -46,7 +42,7 @@
       "dialout"
       "networkmanager"
     ];
-    hashedPasswordFile = config.sops.secrets."rpi/password".path;
+    hashedPasswordFile = config.sops.secrets."keys/password".path;
   };
 
   nix.settings = {

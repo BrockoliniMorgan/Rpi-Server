@@ -18,41 +18,55 @@
       sops-nix,
       self,
       ...
-    }:
+    }@inputs:
     let
       inherit (nixpkgs) lib;
       username = "qutrc";
-      hostNames = builtins.concatLists (
+      piHostNames = builtins.concatLists (
         builtins.genList (i: [ "qutrc-pi-${lib.fixedWidthNumber 2 i}" ]) 8
       );
-      createSystem = hostName: {
-        ${hostName} = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
+      serverHostNames = [
+        "katherine"
+        "mary"
+      ];
+      createSystemTemplate =
+        system: hostName:
+        lib.nixosSystem {
+          inherit system;
           modules = [
-            nixos-hardware.nixosModules.raspberry-pi-3 # This replaces hardware-configuration.nix
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            {
-              sdImage.compressImage = false;
-              image.fileName = "${hostName}-sdImage.img";
-              sdImage.firmwareSize = 50;
-            }
             sops-nix.nixosModules.sops
             ./system
           ];
           specialArgs = {
             inherit hostName username;
-          };
+          }
+          // inputs;
+        };
+      createPiSystem = hostName: {
+        ${hostName} = (createSystemTemplate "aarch64-linux" hostName).extendModules {
+          modules = [
+            nixos-hardware.nixosModules.raspberry-pi-3 # This replaces hardware-configuration.nix
+            ./system/rpi
+          ];
         };
       };
-      createSDSystem = hostName: {
+      createPiSDSystem = hostName: {
         "${hostName}-sd" = self.nixosConfigurations.${hostName}.config.system.build.sdImage;
       };
-      applyToHostnames =
-        function: (builtins.foldl' (acc: new: acc // new) { } (lib.map function hostNames));
-
+      createServerSystem = hostName: {
+        ${hostName} = (createSystemTemplate "x86_64-linux" hostName).extendModules {
+          modules = [
+            ./hardware
+          ];
+        };
+      };
+      applyToList = list: function: (builtins.foldl' (acc: new: acc // new) { } (lib.map function list));
+      applyToPiHostNames = applyToList piHostNames;
+      applyToServerHostNames = applyToList serverHostNames;
     in
     {
-      nixosConfigurations = applyToHostnames createSystem;
-      packages.x86_64-linux = applyToHostnames createSDSystem;
+      nixosConfigurations =
+        applyToPiHostNames createPiSystem // applyToServerHostNames createServerSystem;
+      packages.x86_64-linux = applyToPiHostNames createPiSDSystem;
     };
 }
